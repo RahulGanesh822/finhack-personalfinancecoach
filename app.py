@@ -79,14 +79,35 @@ summary = data.groupby("Category")["Amount"].sum()
 
 if page == "Dashboard":
     st.header("Overview")
+
     col1, col2, col3, col4 = st.columns(4)
-    col1.metric("Income", "₹25000")
-    col2.metric("Spent", f"₹{total_spent}")
+    col1.metric("Income", f"₹{monthly_income}")
+    col2.metric("Total Spent", f"₹{total_spent}")
     col3.metric("Savings", f"₹{savings}")
     col4.metric("Savings Rate", f"{savings_rate:.1f}%")
+    
+    st.subheader("Financial Health Score")
+
+    if savings_rate >= 30:
+        st.success("Excellent – Strong savings discipline")
+    elif savings_rate >= 20:
+        st.info("Good – On track but can optimize")
+    elif savings_rate >= 10:
+        st.warning("Risk – Low savings, reduce discretionary spend")
+    else:
+        st.error("Critical – Immediate spending control needed")
+    
+
+   
 
     st.subheader("Spending Summary")
     st.bar_chart(summary)
+    st.subheader("Spending Distribution")
+    fig, ax = plt.subplots()
+    ax.pie(summary, labels=summary.index, autopct="%1.1f%%", startangle=90)
+    ax.axis("equal")
+    st.pyplot(fig)
+    
 
     st.subheader("Budget Analysis")
     for category, spent in summary.items():
@@ -96,16 +117,7 @@ if page == "Dashboard":
        else:
            st.success(f"{category}: ₹{spent} spent (Within budget)")
    
-    st.subheader("Financial Health Score")
-    if savings_rate >= 30:
-       st.success("Excellent – Strong savings discipline")
-    elif savings_rate >= 20:
-       st.info("Good – On track but can optimize")
-    elif savings_rate >= 10:
-       st.warning("Risk – Low savings, reduce discretionary spend")
-    else:
-       st.error("Critical – Immediate spending control needed")
-
+    
     st.subheader("AI Recommendations")
     if summary.get("Entertainment", 0) > budgets["Entertainment"]:
         st.write("👉 Reduce entertainment expenses to improve savings.")

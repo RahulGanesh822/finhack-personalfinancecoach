@@ -18,3 +18,4 @@ A Streamlit-based personal finance application that helps users track expenses, 
 1. Install dependencies:
    ```bash
    pip install -r requirements.txt
+

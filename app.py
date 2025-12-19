@@ -92,14 +92,24 @@ if page == "Dashboard":
     # ------------------------
     # Budget adherence
     total_budget = 40000  # Replace with actual budget if available
-    budget_score = max(0, 1 - max(0, total_spent - total_budget)/total_budget)
+    overspend_ratio = (total_spent - total_budget) / total_budget
+
+    if overspend_ratio <= 0:
+        budget_score = 1
+    elif overspend_ratio <= 0.1:
+        budget_score = 0.7
+    elif overspend_ratio <= 0.25:
+        budget_score = 0.4
+    else:
+        budget_score = 0.1
+
 
     # Emergency fund coverage
     recommended_emergency = 3 * total_spent  # 3 months of expenses
     emergency_score = min(savings / recommended_emergency, 1)
 
     # Debt ratio (set 1 if no debt for now)
-    debt_score = 1
+    debt_score = 0.5
 
     # Savings rate score
     savings_score = savings / monthly_income
@@ -108,16 +118,14 @@ if page == "Dashboard":
     health_score = (0.4*savings_score + 0.3*budget_score + 0.2*emergency_score + 0.1*debt_score) * 100
 
     # Display score with colored feedback
-    st.subheader("Financial Health Score")
-    if health_score >= 80:
-        st.success(f"{health_score:.0f} – Excellent financial health")
-    elif health_score >= 60:
-        st.info(f"{health_score:.0f} – Good, on track")
-    elif health_score >= 40:
-        st.warning(f"{health_score:.0f} – Risk, needs improvement")
+    if health_score >= 75:
+        st.success(f"{health_score:.0f} – Excellent")
+    elif health_score >= 55:
+        st.info(f"{health_score:.0f} – Fair")
+    elif health_score >= 35:
+        st.warning(f"{health_score:.0f} – Poor")
     else:
-        st.error(f"{health_score:.0f} – Critical, take action immediately")
-    
+        st.error(f"{health_score:.0f} – Critical")
 
    
 
@@ -139,7 +147,7 @@ if page == "Dashboard":
            st.success(f"{category}: ₹{spent} spent (Within budget)")
    
     
-    st.subheader("AI Recommendations")
+    st.subheader("Recommendations")
     if summary.get("Entertainment", 0) > budgets["Entertainment"]:
         st.write("👉 Reduce entertainment expenses to improve savings.")
     if summary.get("Food", 0) > budgets["Food"]:

@@ -62,8 +62,6 @@ def categorize(desc):
     else:
         return "Other"
 
-data["Category"] = data["Description"].apply(categorize)
-
 # Budget limits (monthly)
 budgets = {
     "Food": 2000,

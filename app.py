@@ -80,22 +80,45 @@ summary = data.groupby("Category")["Amount"].sum()
 if page == "Dashboard":
     st.header("Overview")
 
+    # ------------------------
+    # Metrics
+    # ------------------------
     col1, col2, col3, col4 = st.columns(4)
     col1.metric("Income", f"₹{monthly_income}")
     col2.metric("Total Spent", f"₹{total_spent}")
     col3.metric("Savings", f"₹{savings}")
     col4.metric("Savings Rate", f"{savings_rate:.1f}%")
-    
-    st.subheader("Financial Health Score")
 
-    if savings_rate >= 30:
-        st.success("Excellent – Strong savings discipline")
-    elif savings_rate >= 20:
-        st.info("Good – On track but can optimize")
-    elif savings_rate >= 10:
-        st.warning("Risk – Low savings, reduce discretionary spend")
+    # ------------------------
+    # Multi-Factor Financial Health Score
+    # ------------------------
+    # Budget adherence
+    total_budget = 40000  # Replace with actual budget if available
+    budget_score = max(0, 1 - max(0, total_spent - total_budget)/total_budget)
+
+    # Emergency fund coverage
+    recommended_emergency = 3 * total_spent  # 3 months of expenses
+    emergency_score = min(savings / recommended_emergency, 1)
+
+    # Debt ratio (set 1 if no debt for now)
+    debt_score = 1
+
+    # Savings rate score
+    savings_score = savings / monthly_income
+
+    # Weighted health score (0-100)
+    health_score = (0.4*savings_score + 0.3*budget_score + 0.2*emergency_score + 0.1*debt_score) * 100
+
+    # Display score with colored feedback
+    st.subheader("Financial Health Score")
+    if health_score >= 80:
+        st.success(f"{health_score:.0f} – Excellent financial health")
+    elif health_score >= 60:
+        st.info(f"{health_score:.0f} – Good, on track")
+    elif health_score >= 40:
+        st.warning(f"{health_score:.0f} – Risk, needs improvement")
     else:
-        st.error("Critical – Immediate spending control needed")
+        st.error(f"{health_score:.0f} – Critical, take action immediately")
     
 
    

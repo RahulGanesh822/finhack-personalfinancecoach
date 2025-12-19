@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 
 # Load data
 data = pd.read_csv("transactions.csv")
+category_budgets = {}
+total_budget = 0
 
 st.title("AI Personal Finance Coach")
 
@@ -23,6 +25,37 @@ uploaded_file = st.sidebar.file_uploader(
     "Upload CSV file",
     type=["csv"]
 )
+
+st.sidebar.header("Monthly Budget Settings")
+
+overall_budget = st.sidebar.number_input(
+    "Overall Monthly Budget (₹)",
+    min_value=0,
+    value=20000,
+    step=500
+)
+
+if not data.empty:
+    summary = data.groupby("Category")["Amount"].sum()
+
+    st.sidebar.subheader("Category Budgets")
+    category_budgets = {}
+
+    default_cat_budget = (
+        int(overall_budget / len(summary)) if len(summary) > 0 else 0
+    )
+
+    for category in summary.index:
+        category_budgets[category] = st.sidebar.number_input(
+            f"{category} Budget (₹)",
+            min_value=0,
+            value=default_cat_budget,
+            step=500,
+            key=f"budget_{category}"
+        )
+
+    total_budget = sum(category_budgets.values())
+
 
 if uploaded_file is not None:
     data = pd.read_csv(uploaded_file)
@@ -46,6 +79,8 @@ monthly_income = 25000  # demo income
 total_spent = data["Amount"].sum()
 savings = monthly_income - total_spent
 savings_rate = (savings / monthly_income) * 100
+overspent_amount = max(0, total_spent - total_budget)
+
 
 
 # Simple AI-like categorization
@@ -91,10 +126,13 @@ if page == "Dashboard":
     # Multi-Factor Financial Health Score
     # ------------------------
     # Budget adherence
-    total_budget = 40000  # Replace with actual budget if available
+    total_budget = sum(category_budgets.values())
     overspend_ratio = (total_spent - total_budget) / total_budget
 
-    if overspend_ratio <= 0:
+    overspent_amount = max(0, total_spent - total_budget)
+    overspend_ratio = overspent_amount / total_budget if total_budget > 0 else 0
+
+    if overspend_ratio == 0:
         budget_score = 1
     elif overspend_ratio <= 0.1:
         budget_score = 0.7
@@ -136,8 +174,23 @@ if page == "Dashboard":
     ax.pie(summary, labels=summary.index, autopct="%1.1f%%", startangle=90)
     ax.axis("equal")
     st.pyplot(fig)
-    
+    summary = data.groupby("Category")["Amount"].sum()
+    st.sidebar.header("Monthly Budget Settings")
 
+    overall_budget = st.sidebar.number_input(
+     "Overall Monthly Budget (₹)",
+    min_value=0,
+    value=20000,
+    step=500,
+    key="overall_budget"
+  )
+
+    st.sidebar.subheader("Category Budgets")
+
+    category_budgets = {}
+    default_cat_budget = int(overall_budget / len(summary)) if len(summary) > 0 else 0
+
+        
     st.subheader("Budget Analysis")
     for category, spent in summary.items():
        budget = budgets.get(category, 0)
